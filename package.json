@@ -22,7 +22,7 @@
         "unixtimestamp"
     ],
     "dependencies": {
-        "@destinationstransfers/ntp": "^2.0.0"
+        "ntp2": "0.0.0"
     },
     "license": "MIT",
     "bugs": {
