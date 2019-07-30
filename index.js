@@ -5,27 +5,29 @@
  */
  
 const http = require('http')
-const NTPClient = require('@destinationstransfers/ntp')
+const ntp = require('ntp2')
 // `proccess.env` return `{String}`. Listen server requiries `{Number}` type for "port" parameter of server
 const PORT = Number(process.env.PORT) || 3000
 const server = http.createServer((req, res) => {
     // handler
     if ( req.url === '/time' ) {
         try {
-            NTPClient.getNetworkTime().then(date => {
-                res.writeHeader('200', 'OK', {
-                    'Content-Type': 'application/json; charset=utf-8'
-                })
-                res.end(JSON.stringify({
-                    time: date
-                }))
-            }).catch(e => {
-                res.writeHeader('402', 'Unprocessable Entity', {
-                    'Content-Type': 'application/json; charset=utf-8'
-                })
-                res.end(JSON.stringify({
-                    error: e.message
-                }))
+            ntp.time({server: 'time.google.com'}, (err, response) => {
+                if ( err ) {
+                    res.writeHeader('402', 'Unprocessable Entity', {
+                        'Content-Type': 'application/json; charset=utf-8'
+                    })
+                    res.end(JSON.stringify({
+                        error: err
+                    }))
+                } else {
+                    res.writeHeader('200', 'OK', {
+                        'Content-Type': 'application/json; charset=utf-8'
+                    })
+                    res.end(JSON.stringify({
+                        time: new Date(response.destinationTimestamp)
+                    }))
+                }
             })
         } catch(ex) {
             res.writeHeader('402', 'Unprocessable Entity', {
@@ -45,10 +47,6 @@ const server = http.createServer((req, res) => {
 })
 
 // start server
-server.listen({port: PORT}, (token) => {
-    if ( token ) {
-        console.log('Runing on port: ' + PORT)
-    } else {
-        console.log('Failed to listen to port ' + PORT)
-    }
+server.listen({port: PORT}, () => {
+    console.log('Runing on port: ' + PORT)
 })
