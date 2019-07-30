@@ -1,0 +1,37 @@
+{
+    "name": "node-ntp",
+    "description": "Simple NTP Node Server",
+    "version": "0.1.0",
+    "main": "index.js",
+    "scripts": {
+        "start": "node index.js"
+    },
+    "author": {
+        "name": "Lauro Moraes",
+        "email": "subversivo58@gmail.com",
+        "url": "https://github.com/subversivo58"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/iconic-dreams/node-ntp.git"
+    },
+    "keywords": [
+        "ntp",
+        "time",
+        "UTC",
+        "unixtimestamp"
+    ],
+    "dependencies": {
+        "@destinationstransfers/ntp": "^2.0.0",
+        "uWebSockets.js": "github:uNetworking/uWebSockets.js#v15.11.0"
+    },
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/iconic-dreams/node-ntp/issues"
+    },
+    "engines": {
+        "node": "10.15.x",
+        "npm": "6.8.x"
+    },
+    "private": true
+}
