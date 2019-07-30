@@ -4,45 +4,48 @@
  * @version 0.1.0 [development stage]         - [https://github.com/subversivo58/subversivo58.github.io/blob/master/VERSIONING.md]
  */
  
-const uWS = require('uWebSockets.js')
+const http = require('http')
 const NTPClient = require('@destinationstransfers/ntp')
-
 // `proccess.env` return `{String}`. Listen server requiries `{Number}` type for "port" parameter of server
 const PORT = Number(process.env.PORT) || 3000
-
-const app = uWS.App()
-
-app.get('/time', (res, req) => {
-    //
-    try {
-        NTPClient.getNetworkTime().then(date => {
-            res.writeStatus('200 OK')
-            res.end(JSON.stringify({
-                time: date
+const server = http.createServer((req, res) => {
+    // handler
+    if ( req.url === '/time' ) {
+        try {
+            NTPClient.getNetworkTime().then(date => {
+                res.writeHeader('200', 'OK', {
+                    'Content-Type': 'application/json; charset=utf-8'
+                })
+                res.end(JSON.stringify({
+                    time: date
+                }))
+            }).catch(e => {
+                res.writeHeader('402', 'Unprocessable Entity', {
+                    'Content-Type': 'application/json; charset=utf-8'
+                })
+                res.end(JSON.stringify({
+                    error: e.message
+                }))
             })
-        }).catch(e => {
-            res.writeStatus('402 Unprocessable Entity')
+        } catch(ex) {
+            res.writeHeader('402', 'Unprocessable Entity', {
+                    'Content-Type': 'application/json; charset=utf-8'
+                })
             res.end(JSON.stringify({
-                error: e.message
-            })
+                exception: ex.message
+            }))
+        }
+    } else {
+        res.writeHeader('302', 'Temporary Redirect', {
+            'X-Frame-Options': 'DENY',
+            'Location': 'https://github.com/subversivo58/'
         })
-    } catch(ex) {
-        res.writeStatus('402 Unprocessable Entity')
-        res.end(JSON.stringify({
-            error: ex.message
-        })
+        res.end()
     }
 })
 
-app.any('/*', (res, req) => {
-    res.writeStatus('302 Temporary Redirect')
-    res.writeHeader('X-Frame-Options', 'DENY')
-    res.writeHeader('Location', 'https://github.com/subversivo58/')
-    res.end()
-})
-
 // start server
-app.listen(PORT, (token) => {
+server.listen({port: PORT}, (token) => {
     if ( token ) {
         console.log('Runing on port: ' + PORT)
     } else {
