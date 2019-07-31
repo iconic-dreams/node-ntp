@@ -10,33 +10,42 @@ const ntp = require('ntp2')
 const PORT = Number(process.env.PORT) || 3000
 const server = http.createServer((req, res) => {
     // handler
-    if ( req.url === '/time' ) {
+    if ( req.url === '/time' && req.method === 'GET' ) {
+        // for development ... use as "wildcard" if no match "origin"
+        let hostname = ('origin' in req.headers && req.headers['origin'] !== null) ? req.headers['origin'] : '*'
+        res.setHeader('Access-Control-Allow-Origin', hostname)
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+
+        let ErrorRequest = message => {
+            res.writeHeader('500', 'Internal Server Error', {
+                'Content-Type': 'application/json; charset=utf-8'
+            })
+            res.end(JSON.stringify({
+                error: message
+            }))
+        }
+
         try {
             ntp.time({server: 'time.google.com'}, (err, response) => {
                 if ( err ) {
-                    res.writeHeader('402', 'Unprocessable Entity', {
-                        'Content-Type': 'application/json; charset=utf-8'
-                    })
-                    res.end(JSON.stringify({
-                        error: err
-                    }))
+                    ErrorRequest(err)
                 } else {
                     res.writeHeader('200', 'OK', {
                         'Content-Type': 'application/json; charset=utf-8'
                     })
                     res.end(JSON.stringify({
-                        time: new Date(response.destinationTimestamp)
+                        time: response.time
                     }))
                 }
             })
         } catch(ex) {
-            res.writeHeader('402', 'Unprocessable Entity', {
-                    'Content-Type': 'application/json; charset=utf-8'
-                })
-            res.end(JSON.stringify({
-                exception: ex.message
-            }))
+            ErrorRequest(ex.message)
         }
+    } else if ( req.url === '/favicon.ico' && req.method === 'GET' ) {
+        res.writeHead('200', 'OK', {
+            'Content-Type': 'image/x-icon'
+        })
+        res.end()
     } else {
         res.writeHeader('302', 'Temporary Redirect', {
             'X-Frame-Options': 'DENY',
